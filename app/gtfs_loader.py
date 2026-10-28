@@ -1,10 +1,10 @@
-"""
-Script to load GTFS data
-"""
+import logging
 
 from pathlib import Path
 
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 GTFS_FILES = {
     "stops": "stops.txt",
@@ -14,7 +14,7 @@ GTFS_FILES = {
 }
 
 def load_gtfs_data(data_dir: Path) -> dict[str, pd.DataFrame]:
-    """Loading GTFS data into dataframes."""
+    logger.info(f"Loading GTFS data from {data_dir}")
 
     missing_files = [
         filename
@@ -27,7 +27,10 @@ def load_gtfs_data(data_dir: Path) -> dict[str, pd.DataFrame]:
             f"Missing GTFS files: {', '.join(missing_files)}"
         )
 
-    return {
-        name: pd.read_csv(data_dir / filename)
-        for name, filename in GTFS_FILES.items()
-    }
+    gtfs = {}
+
+    for name, filename in GTFS_FILES.items():
+        gtfs[name] = pd.read_csv(data_dir / filename)
+        logger.info("Loaded %s: %s rows", filename, f"{len(gtfs[name]):,}")
+
+    return gtfs

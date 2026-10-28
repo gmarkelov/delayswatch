@@ -2,6 +2,8 @@ from pathlib import Path
 
 import pandas as pd
 
+import pytest
+
 from app.gtfs_loader import load_gtfs_data
 
 
@@ -13,12 +15,10 @@ def test_load_gtfs_data(tmp_path: Path):
         isinstance(dataframe, pd.DataFrame) for dataframe in gtfs.values()
     )
 
-def test_load_gtfs_data_missing_file(tmp_path: Path):
-    # Create a temporary directory with only some GTFS files
-    (tmp_path / "stops.txt").write_text("stop_id,stop_name\n1,Stop A\n2,Stop B")
-    (tmp_path / "routes.txt").write_text("route_id,route_name\n1,Route A\n2,Route B")
-
-    try:
+def test_load_gtfs_data_missing_files(tmp_path: Path):
+    with pytest.raises(FileNotFoundError) as exc_info:
         load_gtfs_data(tmp_path)
-    except FileNotFoundError as e:
-        assert "Missing GTFS files" in str(e)
+
+    assert str(exc_info.value) == (
+        "Missing GTFS files: stops.txt, routes.txt, trips.txt, stop_times.txt"
+    )
